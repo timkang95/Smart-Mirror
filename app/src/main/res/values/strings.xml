@@ -1,3 +1,10 @@
 <resources>
-    <string name="app_name">smartmirror</string>
+    <string name="app_name">Alarm Clock</string>
+    <string name="action_settings">Settings</string>
+
+    <string-array name="song_array">
+        <item>Pick a song!</item>
+        <item>Sweet Disposition</item>
+    </string-array>
+
 </resources>
