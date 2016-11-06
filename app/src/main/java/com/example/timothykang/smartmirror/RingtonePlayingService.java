@@ -106,12 +106,13 @@ public class RingtonePlayingService extends Service {
 
                 Random random_number = new Random();
                 int song_number = random_number.nextInt(maximum_number + minimum_number);
-                Log.e("random number is " , String.valueOf(song_number));
+                //Log.e("random number is " , String.valueOf(song_number));
 
 
                 if (song_number == 1) {
                     media_song = MediaPlayer.create(this, R.raw.sweet_disposition);
                     media_song.start();
+
                 }
 
                 else {
@@ -131,6 +132,8 @@ public class RingtonePlayingService extends Service {
                 media_song = MediaPlayer.create(this, R.raw.sweet_disposition);
                 media_song.start();
             }
+            elapsedTime.starttime = System.currentTimeMillis();
+            Log.e("start time milliseconds" , String.valueOf(elapsedTime.starttime));
 
 
 

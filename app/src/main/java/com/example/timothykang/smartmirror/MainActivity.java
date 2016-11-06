@@ -27,6 +27,7 @@ import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
+    long timeElapsed;
     //to make our alarm manager
     AlarmManager alarm_manager;
     TimePicker alarm_timepicker;
@@ -142,8 +143,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onClick(View v) {
 
+                //update end time to calculate how long it took for the user to turn off alarm
+                elapsedTime.endtime = System.currentTimeMillis();
+                Log.e("end time(milliseconds) " , String.valueOf(elapsedTime.endtime));
+                timeElapsed = elapsedTime.endtime - elapsedTime.starttime;
                 // method that changes the update text Textbox
                 set_alarm_text("Alarm off!");
+                Log.e("it took the user " , String.valueOf(timeElapsed/ 1000));
 
                 // cancel the alarm
                 alarm_manager.cancel(pending_intent);
