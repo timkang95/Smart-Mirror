@@ -2,21 +2,27 @@ package com.example.timothykang.smartmirror;
 
 
 import android.annotation.TargetApi;
+import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Build;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.util.Log;
 
 import java.util.Random;
+import java.util.concurrent.locks.Lock;
 
 
 public class RingtonePlayingService extends Service {
 
+    private PowerManager mPowerManager;
+    private PowerManager.WakeLock mWakeLock;
     MediaPlayer media_song;
     int startId;
     boolean isRunning;
@@ -135,13 +141,12 @@ public class RingtonePlayingService extends Service {
             elapsedTime.starttime = System.currentTimeMillis();
             Log.e("start time milliseconds" , String.valueOf(elapsedTime.starttime));
 
+            KeyguardManager.KeyguardLock lock = ((KeyguardManager) getSystemService(MainActivity.KEYGUARD_SERVICE)).newKeyguardLock(KEYGUARD_SERVICE);
+            PowerManager powerManager = ((PowerManager) getSystemService(Context.POWER_SERVICE));
+            PowerManager.WakeLock wake = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK | PowerManager.ACQUIRE_CAUSES_WAKEUP, "TAG");
 
-
-
-
-
-
-
+            lock.disableKeyguard();
+            wake.acquire();
 
 
         }
@@ -200,7 +205,5 @@ public class RingtonePlayingService extends Service {
         super.onDestroy();
         this.isRunning = false;
     }
-
-
 
 }
