@@ -168,6 +168,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 // stop the ringtone
                 sendBroadcast(my_intent);
 
+                Intent launchIntent = getPackageManager().getLaunchIntentForPackage("com.example.timothykang.myweatherapp");
+                if (launchIntent != null) {
+                    startActivity(launchIntent);//null pointer check in case package name was not found
+                }
 
             }
         });
