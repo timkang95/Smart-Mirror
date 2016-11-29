@@ -7,15 +7,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Window;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -23,8 +20,16 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+
+import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
@@ -37,7 +42,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     Context context;
     PendingIntent pending_intent;
     int choose_song_sound;
-
+    final private int PORT = 8883;   // Standard MQTT port
+    final private String MSG_ADDR = "7s448s.messaging.internetofthings.ibmcloud.com";
+    final private String API_KEY = "a-7s448s-9ihuhb9fnn";
+    final private String AUTH_TOKEN = "A9a7Yq*ks_08FIvNP-";
+    private IMqttToken token;
+    private MqttAndroidClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -154,6 +164,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 set_alarm_text("Alarm off!");
                 Log.e("it took the user " , String.valueOf(timeElapsed/ 1000));
 
+                long diff = elapsedTime.starttime - elapsedTime.endtime;
+                String topic = "time/new";
+                String payload = Long.toString(diff);
+                byte[] encodedPayload = new byte[0];
+                try {
+                    encodedPayload = payload.getBytes("UTF-8");
+                    MqttMessage message = new MqttMessage(encodedPayload);
+                    client.publish(topic, message);
+                } catch (UnsupportedEncodingException | MqttException e) {
+                    e.printStackTrace();
+                }
                 // cancel the alarm
                 alarm_manager.cancel(pending_intent);
 
@@ -176,8 +197,47 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             }
         });
 
+        try {
+            this.setupMQTTConnection();
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
 
+    }
 
+    private void setupMQTTConnection() throws MqttException {
+//        String hostname = 12 + ".messaging.internetofthings.ibmcloud.com";
+        String clientId = MqttClient.generateClientId();
+        client =
+                new MqttAndroidClient(this.getApplicationContext(), "tcp://broker.hivemq.com:1883",
+                        clientId);
+
+        try {
+            token = client.connect();
+            token.setActionCallback(new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    // We are connected
+                    Log.d("MESSAGE", "onSuccess");
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    // Something went wrong e.g. connection timeout or firewall problems
+                    Log.d("MESSAGE", "onFailure");
+
+                }
+            });
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+
+        MqttConnectOptions options = new MqttConnectOptions();
+        options.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1);
+
+        options.setUserName(API_KEY);
+        options.setPassword(AUTH_TOKEN.toCharArray());
+        token = client.connect(options);
     }
 
     private void set_alarm_text(String output) {
