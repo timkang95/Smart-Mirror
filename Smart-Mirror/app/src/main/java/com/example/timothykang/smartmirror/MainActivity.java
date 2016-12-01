@@ -20,6 +20,7 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -169,6 +170,25 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 // method that changes the update text Textbox
                 set_alarm_text("Alarm off!");
                 Log.e("it took the user " , String.valueOf(timeElapsed/ 1000));
+
+                Context context = getApplicationContext();
+                CharSequence text = "Hello, I hope you slept well!";
+                int duration = Toast.LENGTH_SHORT;
+
+                Toast toast = Toast.makeText(context, text, duration);
+                toast.show();
+
+                elapsedTime.totalTime += (timeElapsed/1000);
+                elapsedTime.totalTimes++;
+                elapsedTime.averageTimes = elapsedTime.totalTime / elapsedTime.totalTimes;
+
+                text = "It took you " + (timeElapsed/1000) + " seconds to wake up";
+                toast = Toast.makeText(context, text, duration);
+                toast.show();
+
+                text = "Your average time to wake up is " + elapsedTime.averageTimes;
+                toast = Toast.makeText(context, text, duration);
+                toast.show();
 
                 JSONObject contObj = new JSONObject();
                 JSONObject jsonObj = new JSONObject();

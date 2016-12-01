@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        is-multidex="true"
+        jar="C:\Users\Tim\Documents\GitHub\Smart-Mirror\app\build\intermediates\exploded-aar\com.android.support\appcompat-v7\23.1.1\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="23.0.2"
+        sha1="5c5699834e9722f1c288fea2de82725d078ba127">
+        <dex dex="C:\Users\Tim\Documents\GitHub\Smart-Mirror\app\build\intermediates\transforms\dex\debug\folders\1000\10\com.android.support-appcompat-v7-23.1.1_7c69008442777b8a548c1765b7b2c904721252db\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Tim\Documents\GitHub\Smart-Mirror\app\build\intermediates\exploded-aar\com.android.support\recyclerview-v7\23.1.1\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="23.0.2"
+        sha1="09c5e804bc67fc0580360043dff067df574a60d4">
+        <dex dex="C:\Users\Tim\Documents\GitHub\Smart-Mirror\app\build\intermediates\transforms\dex\debug\folders\1000\10\com.android.support-recyclerview-v7-23.1.1_3c39e33d92bbccfd5462aa4ebd597842e310aae0\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Tim\Documents\GitHub\Smart-Mirror\app\build\intermediates\incremental-classes\debug\instant-run-bootstrap.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="23.0.2"
+        sha1="dde0420fbe4ba7b3ba63ef5b3d8d73e9be47f3fe">
+        <dex dex="C:\Users\Tim\Documents\GitHub\Smart-Mirror\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run-bootstrap_2e99c1a8528931f73f71c78f39d13fe34757eb0a\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Tim\AppData\Local\Android\sdk\extras\android\m2repository\com\android\support\support-annotations\23.1.1\support-annotations-23.1.1.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="23.0.2"
+        sha1="8d680ba5a623724d1fb0e81c36a790f023a6cede">
+        <dex dex="C:\Users\Tim\Documents\GitHub\Smart-Mirror\app\build\intermediates\transforms\dex\debug\folders\1000\10\support-annotations-23.1.1_4d7ec6300924a7334b4e25188705146a8e418944\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Tim\Documents\GitHub\Smart-Mirror\app\build\intermediates\exploded-aar\com.android.support\support-v4\23.1.1\jars\libs\internal_impl-23.1.1.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="23.0.2"
+        sha1="a4de9c81ae239414e1ed0f86441b02abaf29bca9">
+        <dex dex="C:\Users\Tim\Documents\GitHub\Smart-Mirror\app\build\intermediates\transforms\dex\debug\folders\1000\10\internal_impl-23.1.1_36dd13483d37a914a47d223e871ec32844ca65db\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Tim\Documents\GitHub\Smart-Mirror\app\build\intermediates\exploded-aar\com.android.support\support-v4\23.1.1\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="23.0.2"
+        sha1="6cbc7773921fcfedbe55657578f0cbfe614778dc">
+        <dex dex="C:\Users\Tim\Documents\GitHub\Smart-Mirror\app\build\intermediates\transforms\dex\debug\folders\1000\10\com.android.support-support-v4-23.1.1_b78c239f99184af265a8b958a4947c9c8e326c3e\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Tim\Documents\GitHub\Smart-Mirror\app\build\intermediates\incremental-runtime-classes\debug\instant-run.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="23.0.2"
+        sha1="1c248ae77dd8514a600176799a82e8dd8ca6fd82">
+        <dex dex="C:\Users\Tim\Documents\GitHub\Smart-Mirror\app\build\intermediates\transforms\dex\debug\folders\1000\10\instant-run_9ac5fda06cc0a277d92c8f80bda728cb8db3bd7e\classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="C:\Users\Tim\Documents\GitHub\Smart-Mirror\app\build\intermediates\exploded-aar\com.android.support\design\23.1.1\jars\classes.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="23.0.2"
+        sha1="379471b2bd17d9737c050345c08e8c7d16589784">
+        <dex dex="C:\Users\Tim\Documents\GitHub\Smart-Mirror\app\build\intermediates\transforms\dex\debug\folders\1000\10\com.android.support-design-23.1.1_7f9b629dcef005731af85d5bfa21fe948e27eb10\classes.dex" />
+    </item>
+
+</items>

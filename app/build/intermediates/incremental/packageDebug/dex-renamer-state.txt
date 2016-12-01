@@ -1,0 +1,7 @@
+#Wed Nov 16 19:52:57 EST 2016
+base.0=C\:\\Users\\Tim\\Documents\\GitHub\\Smart-Mirror\\app\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\10\\instant-run-bootstrap_2e99c1a8528931f73f71c78f39d13fe34757eb0a
+renamed.1=classes.dex
+renamed.0=classes2.dex
+file.1=C\:\\Users\\Tim\\Documents\\GitHub\\Smart-Mirror\\app\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\10\\instant-run_9ac5fda06cc0a277d92c8f80bda728cb8db3bd7e\\classes.dex
+base.1=C\:\\Users\\Tim\\Documents\\GitHub\\Smart-Mirror\\app\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\10\\instant-run_9ac5fda06cc0a277d92c8f80bda728cb8db3bd7e
+file.0=C\:\\Users\\Tim\\Documents\\GitHub\\Smart-Mirror\\app\\build\\intermediates\\transforms\\dex\\debug\\folders\\1000\\10\\instant-run-bootstrap_2e99c1a8528931f73f71c78f39d13fe34757eb0a\\classes.dex

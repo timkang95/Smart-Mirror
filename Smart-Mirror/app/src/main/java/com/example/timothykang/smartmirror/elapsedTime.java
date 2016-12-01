@@ -7,4 +7,9 @@ package com.example.timothykang.smartmirror;
 public class elapsedTime {
     public static long starttime;
     public static long endtime;
+    public static long totalTime = 0;
+    public static long totalTimes = 0;
+    public static long averageTimes;
+
+
 }
