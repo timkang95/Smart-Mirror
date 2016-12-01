@@ -24,10 +24,10 @@ import android.widget.TimePicker;
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
-import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
@@ -42,11 +42,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     Context context;
     PendingIntent pending_intent;
     int choose_song_sound;
+    final private String TAG = "CLIENT INFO";
     final private int PORT = 8883;   // Standard MQTT port
     final private String MSG_ADDR = "7s448s.messaging.internetofthings.ibmcloud.com";
-    final private String API_KEY = "a-7s448s-9ihuhb9fnn";
-    final private String AUTH_TOKEN = "A9a7Yq*ks_08FIvNP-";
-    private IMqttToken token;
+    final private String KEY = "a-m9wkr9-v48itklvpy";
+    final private String PASS = "HvwVcjGw69+Q3Wkm*a";
+    final private String AUTH_METHOD = "use-token-auth";
+    final private String AUTH_TOKEN = "ZUKyFMq8yo+ckVoGfp";
+    final private String URI = "tcp://broker.hivemq.com:1883";
+    final private String CLIENT_ID = "clientId-vMSsD1vZp7";
     private MqttAndroidClient client;
 
     @Override
@@ -140,6 +144,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 alarm_manager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
                         pending_intent);
 
+
+
             }
 
 
@@ -164,18 +170,30 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 set_alarm_text("Alarm off!");
                 Log.e("it took the user " , String.valueOf(timeElapsed/ 1000));
 
-                long diff = elapsedTime.starttime - elapsedTime.endtime;
-                String topic = "time/new";
-                String payload = Long.toString(diff);
-                byte[] encodedPayload = new byte[0];
+                JSONObject contObj = new JSONObject();
+                JSONObject jsonObj = new JSONObject();
                 try {
-                    encodedPayload = payload.getBytes("UTF-8");
-                    MqttMessage message = new MqttMessage(encodedPayload);
-                    client.publish(topic, message);
-                } catch (UnsupportedEncodingException | MqttException e) {
+                    contObj.put("time", timeElapsed);
+                    jsonObj.put("d", contObj);
+                } catch (JSONException e1) {
+                    e1.printStackTrace();
+                }
+
+                byte[] encodedPayload = new byte[0];
+
+                try {
+                    encodedPayload = jsonObj.toString().getBytes("UTF-8");
+                } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
-                // cancel the alarm
+                Log.e(TAG, "Puhlishing"+jsonObj);
+                try {
+                    Log.e(TAG, "Puhlishing"+jsonObj);
+                    client.publish("time/new", encodedPayload, 0, false);
+                } catch (MqttException e) {
+                    e.printStackTrace();
+                }
+
                 alarm_manager.cancel(pending_intent);
 
                 // put extra string into my_intent
@@ -198,46 +216,31 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
 
         try {
-            this.setupMQTTConnection();
+            setupMQTTConnection();
         } catch (MqttException e) {
             e.printStackTrace();
         }
-
+        Log.e("DONE CREATING STUFF", "...yaaaay");
     }
 
     private void setupMQTTConnection() throws MqttException {
-//        String hostname = 12 + ".messaging.internetofthings.ibmcloud.com";
-        String clientId = MqttClient.generateClientId();
-        client =
-                new MqttAndroidClient(this.getApplicationContext(), "tcp://broker.hivemq.com:1883",
-                        clientId);
-
-        try {
-            token = client.connect();
-            token.setActionCallback(new IMqttActionListener() {
-                @Override
-                public void onSuccess(IMqttToken asyncActionToken) {
-                    // We are connected
-                    Log.d("MESSAGE", "onSuccess");
-                }
-
-                @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    // Something went wrong e.g. connection timeout or firewall problems
-                    Log.d("MESSAGE", "onFailure");
-
-                }
-            });
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
+        client = new MqttAndroidClient(this.getApplicationContext(), URI, CLIENT_ID);
 
         MqttConnectOptions options = new MqttConnectOptions();
-        options.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1);
+        options.setCleanSession(true);
+        // options.setUserName(KEY);
+        // options.setPassword(PASS.toCharArray());
+        client.connect(options, new IMqttActionListener() {
+            @Override
+            public void onSuccess(IMqttToken asyncActionToken) {
+                Log.e(TAG, "Connect Success");
+            }
 
-        options.setUserName(API_KEY);
-        options.setPassword(AUTH_TOKEN.toCharArray());
-        token = client.connect(options);
+            @Override
+            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                Log.e(TAG, "Connection Failure: " + exception.getMessage());
+            }
+        });
     }
 
     private void set_alarm_text(String output) {
