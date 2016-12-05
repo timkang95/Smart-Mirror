@@ -43,14 +43,16 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     PendingIntent pending_intent;
     int choose_song_sound;
     final private String TAG = "CLIENT INFO";
-    final private int PORT = 8883;   // Standard MQTT port
-    final private String MSG_ADDR = "7s448s.messaging.internetofthings.ibmcloud.com";
-    final private String KEY = "a-m9wkr9-v48itklvpy";
-    final private String PASS = "HvwVcjGw69+Q3Wkm*a";
-    final private String AUTH_METHOD = "use-token-auth";
-    final private String AUTH_TOKEN = "ZUKyFMq8yo+ckVoGfp";
-    final private String URI = "tcp://broker.hivemq.com:1883";
-    final private String CLIENT_ID = "clientId-vMSsD1vZp7";
+    final private String ORG_ID = "qi0pmu";
+    final private String DEVICE_TYPE = "Android";
+    final private String DEVICE_ID = "123456789123";
+    final private String EVENT_ID = "SmartMirrorAlarm-iotf-service";
+    final private String FORMAT_STRING = "JSON";
+    final private String CLIENT_IDENTIFIER = "d:qi0pmu:Android:123123123123";
+    final private String USERNAME = "use-token-auth";
+    final private String PASSWORD = "xAOKaIJoC?5?xI(Wtv";
+    final private String EVENT_TOPIC = "iot-2/evt/" + EVENT_ID + "/fmt/" + FORMAT_STRING;
+    final private String URI = "tcp://qi0pmu";
     private MqttAndroidClient client;
 
     @Override
@@ -186,7 +188,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
                 }
-                Log.e(TAG, "Puhlishing"+jsonObj);
+
                 try {
                     Log.e(TAG, "Puhlishing"+jsonObj);
                     client.publish("time/new", encodedPayload, 0, false);
@@ -223,24 +225,63 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Log.e("DONE CREATING STUFF", "...yaaaay");
     }
 
+    private boolean isMqttConnected() {
+        Log.d(TAG, ".isMqttConnected() entered");
+        boolean connected = false;
+        try {
+            if ((client != null) && (client.isConnected())) {
+                connected = true;
+            }
+        } catch (Exception e) {
+            // swallowing the exception as it means the client is not connected
+        }
+        Log.d(TAG, ".isMqttConnected() - returning " + connected);
+        return connected;
+    }
+
     private void setupMQTTConnection() throws MqttException {
-        client = new MqttAndroidClient(this.getApplicationContext(), URI, CLIENT_ID);
+        Log.d(TAG, "MQTT Setup entered...");
 
-        MqttConnectOptions options = new MqttConnectOptions();
-        options.setCleanSession(true);
-        // options.setUserName(KEY);
-        // options.setPassword(PASS.toCharArray());
-        client.connect(options, new IMqttActionListener() {
-            @Override
-            public void onSuccess(IMqttToken asyncActionToken) {
-                Log.e(TAG, "Connect Success");
-            }
+        String clientId = "d:" + ORG_ID + ":" + DEVICE_TYPE + ":" + DEVICE_ID;
+        String connectionURI = "tcp://" + ORG_ID + ".messaging.internetofthings.ibmcloud.com:1883";
 
-            @Override
-            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                Log.e(TAG, "Connection Failure: " + exception.getMessage());
+        if(!isMqttConnected()) {
+
+        }
+        if (!isMqttConnected()) {
+            if (client != null) {
+                client.unregisterResources();
+                client = null;
             }
-        });
+            client = new MqttAndroidClient(context, connectionURI, clientId);
+
+            String username = USERNAME;
+            char[] password = PASSWORD.toCharArray();;
+
+            MqttConnectOptions options = new MqttConnectOptions();
+            options.setCleanSession(true);
+            options.setUserName(username);
+            options.setPassword(password);
+
+            Log.d(TAG, "Connecting to server: " + connectionURI);
+            try {
+                Log.e("DEV", "URI: " + connectionURI + " | clientID: " + clientId + " | user: " + username + " | pass: " + PASSWORD);
+                client.connect(options, new IMqttActionListener() {
+                    @Override
+                    public void onSuccess(IMqttToken asyncActionToken) {
+                        Log.e(TAG, "Connect Successful!!");
+                    }
+
+                    @Override
+                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                        Log.e(TAG, "Connect Failed...");
+                    }
+                });
+            } catch (MqttException e) {
+                Log.e(TAG, "Exception caught while attempting to connect to server", e.getCause());
+                throw e;
+            }
+        }
     }
 
     private void set_alarm_text(String output) {
