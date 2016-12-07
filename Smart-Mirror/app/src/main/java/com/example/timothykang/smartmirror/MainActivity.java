@@ -42,17 +42,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     Context context;
     PendingIntent pending_intent;
     int choose_song_sound;
-    final private String TAG = "CLIENT INFO";
-    final private String ORG_ID = "qi0pmu";
-    final private String DEVICE_TYPE = "Android";
-    final private String DEVICE_ID = "123456789123";
-    final private String EVENT_ID = "SmartMirrorAlarm-iotf-service";
-    final private String FORMAT_STRING = "JSON";
-    final private String CLIENT_IDENTIFIER = "d:qi0pmu:Android:123123123123";
-    final private String USERNAME = "use-token-auth";
-    final private String PASSWORD = "xAOKaIJoC?5?xI(Wtv";
-    final private String EVENT_TOPIC = "iot-2/evt/" + EVENT_ID + "/fmt/" + FORMAT_STRING;
-    final private String URI = "tcp://qi0pmu";
+
+    private final String ORG                    = "qi0pmu";
+    private final String DEVICE_TYPE            = "Android";
+    private final String DEVICE_ID              = "123412341234";
+    private final String AUTH_TOKEN             = "?+ri)9JlDrdd3aY_Bc";
+    private final String IOT_ORGANIZATION_TCP   = ".messaging.internetofthings.ibmcloud.com:1883";
+    private final String IOT_DEVICE_USERNAME    = "use-token-auth";
+
+    private final String EVENT = "text";
+    private final String EVENT_TOPIC = "iot-2/evt/" + EVENT + "/fmt/json";
+
+    private final String TAG                    = "CLIENT INFO";
     private MqttAndroidClient client;
 
     @Override
@@ -190,8 +191,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
 
                 try {
+                    if(client.isConnected())
+                        Log.e(TAG, "You're connected!");
+
                     Log.e(TAG, "Puhlishing"+jsonObj);
-                    client.publish("time/new", encodedPayload, 0, false);
+                    client.publish(EVENT_TOPIC, encodedPayload, 0, false);
                 } catch (MqttException e) {
                     e.printStackTrace();
                 }
@@ -219,6 +223,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         try {
             setupMQTTConnection();
+            subscribeMQTT();
         } catch (MqttException e) {
             e.printStackTrace();
         }
@@ -242,21 +247,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private void setupMQTTConnection() throws MqttException {
         Log.d(TAG, "MQTT Setup entered...");
 
-        String clientId = "d:" + ORG_ID + ":" + DEVICE_TYPE + ":" + DEVICE_ID;
-        String connectionURI = "tcp://" + ORG_ID + ".messaging.internetofthings.ibmcloud.com:1883";
+        String clientID = "d:" + ORG + ":" + DEVICE_TYPE + ":" + DEVICE_ID;
+        String connectionURI = "tcp://" + ORG + IOT_ORGANIZATION_TCP;
 
-        if(!isMqttConnected()) {
 
-        }
         if (!isMqttConnected()) {
             if (client != null) {
                 client.unregisterResources();
                 client = null;
             }
-            client = new MqttAndroidClient(context, connectionURI, clientId);
+            client = new MqttAndroidClient(context, connectionURI, clientID);
+            client.setCallback(null);
 
-            String username = USERNAME;
-            char[] password = PASSWORD.toCharArray();;
+            String username = IOT_DEVICE_USERNAME;
+            char[] password = AUTH_TOKEN.toCharArray();;
 
             MqttConnectOptions options = new MqttConnectOptions();
             options.setCleanSession(true);
@@ -265,21 +269,36 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             Log.d(TAG, "Connecting to server: " + connectionURI);
             try {
-                Log.e("DEV", "URI: " + connectionURI + " | clientID: " + clientId + " | user: " + username + " | pass: " + PASSWORD);
-                client.connect(options, new IMqttActionListener() {
+                // connect
+                Log.e("DEV", "URI: " + connectionURI + " | clientID: " + clientID + " | user: " + username + " | pass: " + AUTH_TOKEN);
+                client.connect(options, context, new IMqttActionListener() {
                     @Override
-                    public void onSuccess(IMqttToken asyncActionToken) {
-                        Log.e(TAG, "Connect Successful!!");
-                    }
+                    public void onSuccess(IMqttToken asyncActionToken) { Log.e(TAG, "SUCCESS"); };
 
                     @Override
-                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                        Log.e(TAG, "Connect Failed...");
-                    }
+                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) { Log.e(TAG, "FAILURE: "+exception.getMessage()); }
                 });
             } catch (MqttException e) {
                 Log.e(TAG, "Exception caught while attempting to connect to server", e.getCause());
                 throw e;
+            }
+        } else Log.e(TAG, "Already Connected.");
+    }
+
+    private void subscribeMQTT(){
+        Log.d(TAG, ".subscribe() entered");
+        if (isMqttConnected()) {
+            try {
+                client.subscribe("iot-2/cmd/+/fmt/json", 0, this.getApplicationContext(), new IMqttActionListener() {
+                    @Override
+                    public void onSuccess(IMqttToken asyncActionToken) { Log.e(TAG, "SUBSCRIBED"); }
+
+                    @Override
+                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) { Log.e(TAG, "SUBSCRIBE FAIL: " + exception.getMessage()); }
+                });
+            } catch (MqttException e) {
+                Log.e(TAG, "Exception caught while attempting to subscribe to topic " + "iot-2/cmd/+/fmt/json", e.getCause());
+                e.printStackTrace();
             }
         }
     }
