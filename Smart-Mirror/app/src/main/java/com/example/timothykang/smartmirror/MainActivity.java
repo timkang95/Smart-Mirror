@@ -24,9 +24,12 @@ import android.widget.Toast;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -50,6 +53,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private final String AUTH_TOKEN             = "?+ri)9JlDrdd3aY_Bc";
     private final String IOT_ORGANIZATION_TCP   = ".messaging.internetofthings.ibmcloud.com:1883";
     private final String IOT_DEVICE_USERNAME    = "use-token-auth";
+
+    private String documentRev = null;
+
 
     private final String EVENT = "text";
     private final String EVENT_TOPIC = "iot-2/evt/" + EVENT + "/fmt/json";
@@ -173,52 +179,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 // method that changes the update text Textbox
                 set_alarm_text("Alarm off!");
                 Log.e("it took the user " , String.valueOf(timeElapsed/ 1000));
-
-                Context context = getApplicationContext();
-                CharSequence text = "Hello, I hope you slept well!";
-                int duration = Toast.LENGTH_SHORT;
-
-                Toast toast = Toast.makeText(context, text, duration);
-                toast.show();
-
-                elapsedTime.totalTime += (timeElapsed/1000);
-                elapsedTime.totalTimes++;
-                elapsedTime.averageTimes = elapsedTime.totalTime / elapsedTime.totalTimes;
-
-                text = "It took you " + (timeElapsed/1000) + " seconds to wake up";
-                toast = Toast.makeText(context, text, duration);
-                toast.show();
-
-                text = "Your average time to wake up is " + elapsedTime.averageTimes;
-                toast = Toast.makeText(context, text, duration);
-                toast.show();
-
-                JSONObject contObj = new JSONObject();
-                JSONObject jsonObj = new JSONObject();
-                try {
-                    contObj.put("time", timeElapsed);
-                    jsonObj.put("d", contObj);
-                } catch (JSONException e1) {
-                    e1.printStackTrace();
-                }
-
-                byte[] encodedPayload = new byte[0];
-
-                try {
-                    encodedPayload = jsonObj.toString().getBytes("UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
-
-                try {
-                    if(client.isConnected())
-                        Log.e(TAG, "You're connected!");
-
-                    Log.e(TAG, "Puhlishing"+jsonObj);
-                    client.publish(EVENT_TOPIC, encodedPayload, 0, false);
-                } catch (MqttException e) {
-                    e.printStackTrace();
-                }
+                publish();
 
                 alarm_manager.cancel(pending_intent);
 
@@ -243,11 +204,36 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         try {
             setupMQTTConnection();
-            subscribeMQTT();
         } catch (MqttException e) {
             e.printStackTrace();
         }
         Log.e("DONE CREATING STUFF", "...yaaaay");
+    }
+
+    private void publish() {
+        JSONObject jsonObj = new JSONObject();
+        try {
+            //contObj.put("time", timeElapsed);
+            jsonObj.put("_id", DEVICE_ID);
+        } catch (JSONException e1) {
+            e1.printStackTrace();
+        }
+
+        byte[] encodedPayload = new byte[0];
+
+        try {
+            encodedPayload = jsonObj.toString().getBytes("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            Log.e(TAG, "Publishing: "+jsonObj);
+            client.publish(EVENT_TOPIC, encodedPayload, 0, false);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private boolean isMqttConnected() {
@@ -270,7 +256,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         String clientID = "d:" + ORG + ":" + DEVICE_TYPE + ":" + DEVICE_ID;
         String connectionURI = "tcp://" + ORG + IOT_ORGANIZATION_TCP;
 
-
         if (!isMqttConnected()) {
             if (client != null) {
                 client.unregisterResources();
@@ -281,6 +266,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             String username = IOT_DEVICE_USERNAME;
             char[] password = AUTH_TOKEN.toCharArray();;
+
 
             MqttConnectOptions options = new MqttConnectOptions();
             options.setCleanSession(true);
@@ -293,7 +279,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 Log.e("DEV", "URI: " + connectionURI + " | clientID: " + clientID + " | user: " + username + " | pass: " + AUTH_TOKEN);
                 client.connect(options, context, new IMqttActionListener() {
                     @Override
-                    public void onSuccess(IMqttToken asyncActionToken) { Log.e(TAG, "SUCCESS"); };
+                    public void onSuccess(IMqttToken asyncActionToken) {
+                        Log.e(TAG, "SUCCESS");
+                        subscribe();
+                    };
+
 
                     @Override
                     public void onFailure(IMqttToken asyncActionToken, Throwable exception) { Log.e(TAG, "FAILURE: "+exception.getMessage()); }
@@ -305,10 +295,97 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         } else Log.e(TAG, "Already Connected.");
     }
 
-    private void subscribeMQTT(){
-        Log.d(TAG, ".subscribe() entered");
+    private void handleMessage(String msgTopic, MqttMessage msg) {
+        String payload = new String(msg.getPayload());
+        Log.e(TAG, ".messageArrived - Message received on topic " + msgTopic + ": message is " + payload);
+        Context context = getApplicationContext();
+        CharSequence text = "Hello, I hope you slept well!";
+        int duration = Toast.LENGTH_SHORT;
+
+        Toast toast = Toast.makeText(context, text, duration);
+        toast.show();
+        int ave = 0;
+        int count = 0;
+        try {
+            JSONObject top = new JSONObject(new String(msg.getPayload()));
+            JSONObject d = top.getJSONObject("d");
+            ave = d.getInt("average");
+            count = d.getInt("count");
+            count = d.getInt("count");
+            documentRev = d.getString("rev");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        ave = (int)(ave*count + timeElapsed/1000)/(count + 1);
+        count++;
+        String time = timeElapsed/1000 >= 60
+                ? timeElapsed/60000 + ":" + (timeElapsed%60000)/1000
+                : (timeElapsed/1000) + " seconds";
+
+        String aveTime = ave >= 60
+                ? ave/60 + ":" + ave%60
+                : ave + " seconds";
+
+        Log.e(TAG, time + " | " + timeElapsed/1000);
+        text = "It took you " + time + " to wake up";
+        toast = Toast.makeText(context, text, duration);
+        toast.show();
+
+        text = "Your average time to wake up is " + aveTime + "!";
+        toast = Toast.makeText(context, text, duration);
+        toast.show();
+
+        publishAve(ave, count);
+    }
+
+    private void publishAve(int ave, int count){
+        JSONObject jsonObj = new JSONObject();
+        try {
+            jsonObj.put("_id", DEVICE_ID);
+            jsonObj.put("_rev", documentRev);
+            jsonObj.put("store", true);
+            jsonObj.put("average", ave);
+            jsonObj.put("count", count);
+        } catch (JSONException e1) {
+            e1.printStackTrace();
+        }
+
+        byte[] encodedPayload = new byte[0];
+
+        try {
+            encodedPayload = jsonObj.toString().getBytes("UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            Log.e(TAG, "Publishing: "+jsonObj);
+            client.publish(EVENT_TOPIC, encodedPayload, 0, false);
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void subscribe(){
+        Log.e(TAG, ".subscribe() entered");
         if (isMqttConnected()) {
             try {
+                client.setCallback(new MqttCallback() {
+                    @Override
+                    public void connectionLost(Throwable cause) { Log.e(TAG, "Connection lost..."); }
+
+                    @Override
+                    public void messageArrived(String topic, MqttMessage message) throws Exception {
+                        handleMessage(topic, message);
+                    }
+
+                    @Override
+                    public void deliveryComplete(IMqttDeliveryToken token) {
+
+                    }
+                });
+
                 client.subscribe("iot-2/cmd/+/fmt/json", 0, this.getApplicationContext(), new IMqttActionListener() {
                     @Override
                     public void onSuccess(IMqttToken asyncActionToken) { Log.e(TAG, "SUBSCRIBED"); }
